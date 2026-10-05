@@ -311,6 +311,35 @@ describe('scope miss error messaging (#1369)', () => {
     expect(msg).toContain('Pass the sessionId above to target one');
     expect(msg).not.toContain("add a projectId to the app's connect()");
   });
+
+  it('formats mixed sessions (both tagged and untagged) appropriately', () => {
+    const mgr = new SessionManager();
+    const untagged = new Session(
+      { ...HELLO, sessionId: 's-untagged', projectId: undefined, url: 'http://localhost:3000' },
+      fakeSocket,
+      () => 0,
+    );
+    const tagged = new Session(
+      { ...HELLO, sessionId: 's-tagged', projectId: 'atlas', url: 'http://localhost:4310' },
+      fakeSocket,
+      () => 0,
+    );
+    mgr.add(untagged);
+    mgr.add(tagged);
+
+    let thrown: Error | undefined;
+    try {
+      mgr.resolve(undefined, { projectId: 'shop' });
+    } catch (err) {
+      thrown = err as Error;
+    }
+
+    expect(thrown).toBeDefined();
+    const msg = thrown?.message ?? '';
+    expect(msg).toContain('ARE connected under a different project or with no projectId:');
+    expect(msg).toContain("(no projectId: the page's connect() carries none)");
+    expect(msg).toContain("'atlas'");
+  });
 });
 
 /**
