@@ -227,6 +227,19 @@ function findByComponent(container: HTMLElement, query: ElementQuery): HTMLEleme
  * described as `textbox "Search User"`, the resolver must accept that exact pair, not a different
  * role or name from a second library.
  */
+/**
+ * Does an element whose computed role is `actual` satisfy a query for `queried`?
+ *
+ * `searchbox` is an ARIA sub-role of `textbox`. A standard search input computes as `searchbox`
+ * (per HTML-AAM), which matches `{ role: "searchbox" }`. A `{ role: "textbox" }` query must
+ * keep matching it as well, so existing flows and recorded steps using `textbox` continue to match.
+ */
+function matchesRole(actual: string, queried: string): boolean {
+  if (actual === queried) return true;
+  if ('textbox' === queried && 'searchbox' === actual) return true;
+  return false;
+}
+
 function queryByRoleAndName(
   container: HTMLElement,
   role: string,
@@ -234,7 +247,8 @@ function queryByRoleAndName(
 ): HTMLElement[] {
   return elementsUnder(container).filter(
     (el) =>
-      getRole(el) === role && (name === undefined || exactVisibleText(getAccessibleName(el), name)),
+      matchesRole(getRole(el), role) &&
+      (name === undefined || exactVisibleText(getAccessibleName(el), name)),
   );
 }
 
@@ -683,14 +697,14 @@ const MAX_NAME_NEAR_MISSES = 5;
  * keeping the match exact was meant to avoid.
  */
 function nameNearMisses(container: HTMLElement, query: ElementQuery): string[] {
-  const role = QueryBy.ROLE === query.by ? query.value : undefined;
+  const role = QueryBy.ROLE === query.by ? query.value : query.role;
   const wanted = query.name;
   if (role === undefined || wanted === undefined || 0 === wanted.length) return [];
   const target = normaliseVisibleText(wanted).toLowerCase();
   if (0 === target.length) return [];
   const out: string[] = [];
   for (const el of elementsUnder(container)) {
-    if (isIgnored(el) || getRole(el) !== role) continue;
+    if (isIgnored(el) || !matchesRole(getRole(el), role)) continue;
     const name = normaliseVisibleText(getAccessibleName(el));
     if (0 === name.length) continue;
     const folded = name.toLowerCase();
