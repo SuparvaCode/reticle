@@ -221,13 +221,6 @@ function findByComponent(container: HTMLElement, query: ElementQuery): HTMLEleme
 }
 
 /**
- * Role + name, matched with the same local accessibility engine used to describe results.
- *
- * This intentionally makes Reticle's reported role and name the source of truth. If an element is
- * described as `textbox "Search User"`, the resolver must accept that exact pair, not a different
- * role or name from a second library.
- */
-/**
  * Does an element whose computed role is `actual` satisfy a query for `queried`?
  *
  * `searchbox` is an ARIA sub-role of `textbox`. A standard search input computes as `searchbox`
@@ -240,6 +233,13 @@ function matchesRole(actual: string, queried: string): boolean {
   return false;
 }
 
+/**
+ * Role + name, matched with the same local accessibility engine used to describe results.
+ *
+ * This intentionally makes Reticle's reported role and name the source of truth. If an element is
+ * described as `textbox "Search User"`, the resolver must accept that exact pair, not a different
+ * role or name from a second library.
+ */
 function queryByRoleAndName(
   container: HTMLElement,
   role: string,
@@ -697,14 +697,14 @@ const MAX_NAME_NEAR_MISSES = 5;
  * keeping the match exact was meant to avoid.
  */
 function nameNearMisses(container: HTMLElement, query: ElementQuery): string[] {
-  const role = QueryBy.ROLE === query.by ? query.value : query.role;
+  const role = QueryBy.ROLE === query.by ? query.value : undefined;
   const wanted = query.name;
   if (role === undefined || wanted === undefined || 0 === wanted.length) return [];
   const target = normaliseVisibleText(wanted).toLowerCase();
   if (0 === target.length) return [];
   const out: string[] = [];
   for (const el of elementsUnder(container)) {
-    if (isIgnored(el) || !matchesRole(getRole(el), role)) continue;
+    if (isIgnored(el) || getRole(el) !== role) continue;
     const name = normaliseVisibleText(getAccessibleName(el));
     if (0 === name.length) continue;
     const folded = name.toLowerCase();

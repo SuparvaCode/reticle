@@ -68,9 +68,7 @@ const INPUT_TEXT_TYPES = new Set(['text', 'email', 'tel', 'url', 'password', '']
 
 function inputRole(input: HTMLInputElement): string {
   const type = input.type.toLowerCase();
-  if ('search' === type) {
-    return input.hasAttribute('list') ? 'combobox' : 'searchbox';
-  }
+  if ('search' === type) return 'searchbox';
   if (INPUT_TEXT_TYPES.has(type)) return 'textbox';
   if ('checkbox' === type) return 'checkbox';
   if ('radio' === type) return 'radio';
