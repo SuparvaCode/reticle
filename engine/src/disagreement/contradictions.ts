@@ -14,6 +14,7 @@ import {
   describe,
   isMutating,
   isSameDocumentHashAnchor,
+  isSamePathnameReplace,
   isSteadyCadence,
   netCall,
   recoveredByRetry,
@@ -418,11 +419,11 @@ function findWindowContradictions(
   // heuristic passes it, a route change being unambiguously something.
   const routeEvents = events.filter((e) => e.type === EventType.ROUTE_CHANGE);
   const routed = routeEvents.length > 0;
-  // A skip link (`href="#main-content"`) is a same-document hash change. The observable
-  // consequences are location.hash, focus, and scroll — not a DOM mutation. Treating it as a
-  // blank destination made "did my skip link work" unanswerable. Hash-router paths (`#/invoices`)
-  // still go through the rule: those ARE a new view.
-  const hashAnchorOnly = routed && routeEvents.every(isSameDocumentHashAnchor);
+  // A skip link (`href="#main-content"`) is a same-document hash change. Same-pathname replaceState
+  // mirrors UI state into the URL query or hash without navigating to a new view (#1457).
+  const nonNavigatingOnly =
+    routed &&
+    routeEvents.every((e) => isSameDocumentHashAnchor(e) || isSamePathnameReplace(e));
   // `dom.text` counts as rendered, and it has to: React reconciles a destination IN PLACE far more
   // often than it adds nodes. Measured on three ordinary sidebar navigations of the bench app — every
   // one emitted { dom.attr:2, dom.text:2, render.commit, state.change } and ZERO dom.added/removed,
@@ -442,7 +443,7 @@ function findWindowContradictions(
   const fetched = events.some(
     (e) => e.type === EventType.NET_REQUEST || e.type === EventType.NET_PENDING,
   );
-  if (routed && !hashAnchorOnly && !rendered && !fetched && true !== options.renderProved) {
+  if (routed && !nonNavigatingOnly && !rendered && !fetched && true !== options.renderProved) {
     // A console error in the SAME window turns "nothing rendered" from an absence into a positive
     // claim: the destination did not merely fail to produce content, it crashed while trying to.
     // Reported once as `unknown` when this held — a React hooks error and an empty destination were

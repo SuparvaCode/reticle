@@ -34,6 +34,19 @@ describe('installRoute', () => {
     expect(events).toHaveLength(1);
     expect(events[0]?.type).toBe(EventType.ROUTE_CHANGE);
     expect(String(events[0]?.data['pathname'])).toBe('/next');
+    expect(events[0]?.data['method']).toBe('push');
+  });
+
+  it('emits ROUTE_CHANGE on replaceState with method "replace"', () => {
+    const { emit, events } = collect();
+    teardown = installRoute(emit);
+
+    history.replaceState({}, '', '/replaced?zoom=125');
+
+    expect(events).toHaveLength(1);
+    expect(events[0]?.type).toBe(EventType.ROUTE_CHANGE);
+    expect(String(events[0]?.data['pathname'])).toBe('/replaced');
+    expect(events[0]?.data['method']).toBe('replace');
   });
 
   it('emits ROUTE_CHANGE on a Back navigation after a pushState (stale-lastHref regression)', async () => {
@@ -51,6 +64,7 @@ describe('installRoute', () => {
       (e) => String(e.data['from']).endsWith('/b') && String(e.data['to']).endsWith('/a'),
     );
     expect(backNav).toBeDefined();
+    expect(backNav?.data['method']).toBe('pop');
   });
 
   it('restores the original history methods (identity) on teardown', () => {

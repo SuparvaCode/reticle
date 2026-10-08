@@ -175,6 +175,7 @@ export const EVENT_PAYLOAD_SCHEMAS = {
     pathname: z.string(),
     search: z.string(),
     hash: z.string(),
+    method: z.enum(['push', 'replace', 'pop']).optional(),
   }),
   [EventType.CONSOLE_LOG]: consoleSchema,
   [EventType.CONSOLE_WARN]: consoleSchema,

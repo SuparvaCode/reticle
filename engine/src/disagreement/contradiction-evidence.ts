@@ -145,6 +145,19 @@ export function isSameDocumentHashAnchor(event: ReticleEvent): boolean {
 }
 
 /**
+ * Same origin + pathname updated via replaceState — syncing state into the URL query or hash,
+ * not navigating to a new view (#1457).
+ */
+export function isSamePathnameReplace(event: ReticleEvent): boolean {
+  if (event.type !== EventType.ROUTE_CHANGE) return false;
+  if (event.data['method'] !== 'replace') return false;
+  const from = hrefAsUrl(asString(event.data['from']));
+  const to = hrefAsUrl(asString(event.data['to']));
+  if (from === undefined || to === undefined) return false;
+  return from.origin === to.origin && from.pathname === to.pathname;
+}
+
+/**
  * Split the window into the app's traffic and the dev toolchain's own (see `DevToolingChannel`).
  *
  * NOTHING below may judge the toolchain. Reported from a real drive: a correct Next.js navigation

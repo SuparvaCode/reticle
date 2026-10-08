@@ -425,6 +425,41 @@ describe('the route moved and nothing was rendered for it', () => {
     expect(kinds([top])).not.toContain(ContradictionKind.ROUTE_RENDERED_NOTHING);
   });
 
+  it('stays silent for same-pathname replaceState — UI state synced to URL is not a new view', () => {
+    const replaceSync = ev(EventType.ROUTE_CHANGE, {
+      from: 'http://localhost:5173/app',
+      to: 'http://localhost:5173/app?zoom=125',
+      pathname: '/app',
+      search: '?zoom=125',
+      hash: '',
+      method: 'replace',
+    });
+    expect(kinds([replaceSync])).not.toContain(ContradictionKind.ROUTE_RENDERED_NOTHING);
+    expect(kinds([replaceSync, attrOnly()])).not.toContain(ContradictionKind.ROUTE_RENDERED_NOTHING);
+  });
+
+  it('still flags a pushState or replaceState to a new pathname that renders nothing', () => {
+    const newPathReplace = ev(EventType.ROUTE_CHANGE, {
+      from: 'http://localhost:5173/app',
+      to: 'http://localhost:5173/blank',
+      pathname: '/blank',
+      search: '',
+      hash: '',
+      method: 'replace',
+    });
+    expect(kinds([newPathReplace])).toContain(ContradictionKind.ROUTE_RENDERED_NOTHING);
+
+    const newPathPush = ev(EventType.ROUTE_CHANGE, {
+      from: 'http://localhost:5173/app',
+      to: 'http://localhost:5173/blank',
+      pathname: '/blank',
+      search: '',
+      hash: '',
+      method: 'push',
+    });
+    expect(kinds([newPathPush])).toContain(ContradictionKind.ROUTE_RENDERED_NOTHING);
+  });
+
   it('still flags a hash-router navigation to a blank view (`#/invoices`)', () => {
     // Hash routers keep the route in the fragment. That IS a new view, and a blank one is
     // the original true positive — silencing every hash change would hide it.

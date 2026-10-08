@@ -28,7 +28,7 @@ export function installRoute(emit: Emit): Teardown {
 
   // Guarded whole: this runs inside the app's own `history.pushState` (and inside a popstate
   // listener), so a throw anywhere in reading location or emitting would crash a router's navigate.
-  const fire = (from: string): void => {
+  const fire = (from: string, method?: 'push' | 'replace' | 'pop'): void => {
     observeSafely(() => {
       const to = snapshotLocation();
       if (to.href === from) return;
@@ -39,6 +39,7 @@ export function installRoute(emit: Emit): Teardown {
         pathname: to.pathname,
         search: to.search,
         hash: to.hash,
+        ...(method !== undefined && { method }),
       });
     });
   };
@@ -46,18 +47,18 @@ export function installRoute(emit: Emit): Teardown {
   const patchedPush = (data: unknown, unused: string, url?: string | URL | null): void => {
     const from = location.href;
     callPush(data, unused, url ?? null);
-    fire(from);
+    fire(from, 'push');
   };
   const patchedReplace = (data: unknown, unused: string, url?: string | URL | null): void => {
     const from = location.href;
     callReplace(data, unused, url ?? null);
-    fire(from);
+    fire(from, 'replace');
   };
   history.pushState = patchedPush;
   history.replaceState = patchedReplace;
 
   const onNav = (): void => {
-    fire(lastHref);
+    fire(lastHref, 'pop');
   };
   window.addEventListener('popstate', onNav, { signal: ac.signal });
   window.addEventListener('hashchange', onNav, { signal: ac.signal });

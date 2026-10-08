@@ -1,0 +1,3 @@
+### Fixed
+
+- **`@reticlehq/engine`: syncing UI state into the URL query or hash with `history.replaceState` is no longer graded as `route-rendered-nothing`.** Updating URL parameters (such as filters, tabs, or zoom level) without changing the view pathname does not trigger a full navigation, so an absence of subsequent DOM mutations or network traffic was falsely flagged as a broken or blank route destination. The route observer now tags the navigation method (`push`, `replace`, `pop`), and `route-rendered-nothing` exempts same-origin same-pathname `replaceState` updates alongside same-document hash links. Closes [#1457](https://github.com/reticlehq/reticle/issues/1457).
