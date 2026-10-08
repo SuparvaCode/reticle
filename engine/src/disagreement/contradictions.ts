@@ -422,8 +422,7 @@ function findWindowContradictions(
   // A skip link (`href="#main-content"`) is a same-document hash change. Same-pathname replaceState
   // mirrors UI state into the URL query or hash without navigating to a new view (#1457).
   const nonNavigatingOnly =
-    routed &&
-    routeEvents.every((e) => isSameDocumentHashAnchor(e) || isSamePathnameReplace(e));
+    routed && routeEvents.every((e) => isSameDocumentHashAnchor(e) || isSamePathnameReplace(e));
   // `dom.text` counts as rendered, and it has to: React reconciles a destination IN PLACE far more
   // often than it adds nodes. Measured on three ordinary sidebar navigations of the bench app — every
   // one emitted { dom.attr:2, dom.text:2, render.commit, state.change } and ZERO dom.added/removed,

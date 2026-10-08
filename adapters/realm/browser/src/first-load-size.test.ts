@@ -329,7 +329,13 @@ const DIST_ENTRY = join(PACKAGE_ROOT, 'dist', 'index.js');
  * unreachable-warning text, and the merge measured 256,653 B; the ceiling is that rounded up to the
  * next hundred.
  */
-const MAX_FIRST_LOAD_BYTES = 256_700;
+/*
+ * Raised to 256,900 for route method tracking on ROUTE_CHANGE (#1457). 57 B measured (256,757 B).
+ * Tracking navigation method ('push' | 'replace' | 'pop') enables the engine to distinguish
+ * URL state synchronization (same-pathname replaceState query/hash sync) from navigation
+ * to an unrendered view, avoiding false-positive route-rendered-nothing verdicts.
+ */
+const MAX_FIRST_LOAD_BYTES = 256_900;
 /*
  * Raised 248_300 -> 248_400 for rail slide impressions: `HudUseData` gained an optional `slide`
  * string, its shape checked in the daemon where it is counted, as control ids already are. The

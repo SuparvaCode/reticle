@@ -435,7 +435,9 @@ describe('the route moved and nothing was rendered for it', () => {
       method: 'replace',
     });
     expect(kinds([replaceSync])).not.toContain(ContradictionKind.ROUTE_RENDERED_NOTHING);
-    expect(kinds([replaceSync, attrOnly()])).not.toContain(ContradictionKind.ROUTE_RENDERED_NOTHING);
+    expect(kinds([replaceSync, attrOnly()])).not.toContain(
+      ContradictionKind.ROUTE_RENDERED_NOTHING,
+    );
   });
 
   it('still flags a pushState or replaceState to a new pathname that renders nothing', () => {
